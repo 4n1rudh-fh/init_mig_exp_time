@@ -1,0 +1,5 @@
+# Directories to ignore
+\build
+\images
+\lib
+\MIG_results
