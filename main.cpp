@@ -7,7 +7,13 @@ In this program, we will sort through files inside folders within folders recurs
 #include <opencv4/opencv2/opencv.hpp>
 #include "xlsxwriter.h"
 
-// Function prototyping
+/*
+This function creates folders.
+
+func: create_folders()
+param: relative path with respect to build folder
+return: void
+*/
 void create_folders(const std::string &path);
 
 
@@ -67,7 +73,7 @@ int main()
             return int_a < int_b;
         });
 
-        /* Changing to full path of the image */
+        // Adding full path to the sorted list of filenames
         for (auto &file_name: file_names)
         {
             file_name = exp_dir.path().string() + "/" + file_name;
@@ -87,19 +93,21 @@ int main()
         std::vector<double> mig_vector;
         for (const auto &file_name: file_names)
         {
+            // Read the image in grayscale
             cv::Mat img = cv::imread(file_name, cv::IMREAD_GRAYSCALE);
             if (img.empty())
             {
                 std::cout << "Input correct path to the image. Filename causing error: " << file_name << std::endl;
                 return EXIT_FAILURE;
             }
+
             cv::Mat1f dx, dy, mag; // Declare matrices to store float values
-            cv::Sobel(img, dx, CV_32F, 1, 0, 3);
-            cv::Sobel(img, dy, CV_32F ,0, 1, 3);
-            cv::magnitude(dx, dy, mag); // Source -> Destination
-            cv::Scalar total = cv::sum(mag);
-            double mig = total[0] / (img.rows * img.cols);
-            worksheet_write_number(worksheet, row_count, 0, mig, NULL);
+            cv::Sobel(img, dx, CV_32F, 1, 0, 3); // Sobel operation for x-axis
+            cv::Sobel(img, dy, CV_32F ,0, 1, 3); // Sobel operation for y-axis
+            cv::magnitude(dx, dy, mag); // Calculate magnitude of gradient for each pixel of frame
+            cv::Scalar total = cv::sum(mag); // Sum of magnitudes for all pixels
+            double mig = total[0] / (img.rows * img.cols); // Average of magnitude for whole frame
+            worksheet_write_number(worksheet, row_count, 0, mig, NULL); // Save the average to excel sheet
             mig_vector.push_back(mig);
             row_count++;
         }
